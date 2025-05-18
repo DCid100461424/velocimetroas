@@ -29,28 +29,14 @@ class MyApp extends StatelessWidget {
   }
 }
 
-//TODO: Ver qué hacer con este estado que he sacado del namer
+
+//TODO: Ver si ponemos algo más en esta clase. Probablemente las suscripciones y conexiones.
 class MyAppState extends ChangeNotifier {
   var stateMsg = "Bluetooth is not available on this device";
 
   void changeBluetoothStateMsg(String msg){
     stateMsg = msg;
   }
-/**
-    void getNext() {
-    current = WordPair.random();
-    notifyListeners();
-    }
-    var favorites = <WordPair>[];
-
-    void toggleFavorite() {
-    if (favorites.contains(current)) {
-    favorites.remove(current);
-    } else {
-    favorites.add(current);
-    }
-    notifyListeners();
-    }*/
 }
 
 class SpeedometerScreen extends StatefulWidget {
@@ -103,90 +89,116 @@ class _SpeedometerScreenState extends State<SpeedometerScreen> {
         child: Column(
           children: [
             // CONNECT_BOX
-            Card(
-              child: Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: connectedDevice != null
-                    ? ListTile(
-                  title: Text(
-                    'Connected to: ${connectedDevice!.platformName}',
-                    style: const TextStyle(fontWeight: FontWeight.bold),
-                  ),
-                )
-                    : Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+            buildConnectBox(),
+            const SizedBox(height: 16.0),
+            // MEASURE_BOX
+            buildMeasureBox(),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Expanded buildMeasureBox() {
+    return Expanded(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          // Caja de Velocidad
+          Expanded(
+            child:Card(
+              color: connectedDevice != null ? Colors.blue : Colors.grey[300],
+              child: Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    const Text(
-                      'Available Devices:',
-                      style: TextStyle(fontWeight: FontWeight.bold),
+                    Text(
+                      currentSpeed.toStringAsFixed(1),
+                      style: TextStyle(
+                        fontSize: 72.0,
+                        fontWeight: FontWeight.bold,
+                        color: connectedDevice != null ? Colors.white : Colors.grey[600],
+                      ),
                     ),
-                    const SizedBox(height: 8.0),
-                    isConnecting
-                        ? const Center(child: CircularProgressIndicator())
-                        : scanResults.isEmpty
-                        ? const Text('No devices found')
-                        : ListView.builder(
-                      shrinkWrap: true,
-                      itemCount: scanResults.length,
-                      itemBuilder: (context, index) {
-                        ScanResult result = scanResults[index];
-                        return ListTile(
-                          title: Text(result.device.platformName.isNotEmpty
-                              ? result.device.platformName
-                              : 'Unknown Device'),
-                          subtitle: Text(result.device.remoteId.toString()),
-                          onTap: () => connectToDevice(result.device),
-                        );
-                      },
-                    ),
-                    const SizedBox(height: 8.0),
-                    Center(
-                      child: ElevatedButton.icon(
-                        icon: isScanning
-                            ? const SizedBox(
-                          width: 24,
-                          height: 24,
-                          child: CircularProgressIndicator(
-                            strokeWidth: 2,
-                            color: Colors.white,
-                          ),
-                        )
-                            : const Icon(Icons.refresh),
-                        label: Text(isScanning ? 'Scanning...' : 'Scan'),
-                        onPressed: isScanning ? null : startScan,
+                    Text(
+                      'km/h',
+                      style: TextStyle(
+                        fontSize: 24.0,
+                        color: connectedDevice != null ? Colors.white : Colors.grey[600],
                       ),
                     ),
                   ],
                 ),
               ),
             ),
-            const SizedBox(height: 16.0),
-            // MEASURE_BOX
-            Expanded(
-              child: Card(
-                color: connectedDevice != null ? Colors.blue : Colors.grey[300],
-                child: Center(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Text(
-                        currentSpeed.toStringAsFixed(1),
-                        style: TextStyle(
-                          fontSize: 72.0,
-                          fontWeight: FontWeight.bold,
-                          color: connectedDevice != null ? Colors.white : Colors.grey[600],
-                        ),
-                      ),
-                      Text(
-                        'km/h',
-                        style: TextStyle(
-                          fontSize: 24.0,
-                          color: connectedDevice != null ? Colors.white : Colors.grey[600],
-                        ),
-                      ),
-                    ],
+          ),
+
+          /** TODO: Terminar de implementar la columna
+          Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              //TODO: meter Cards
+            ],
+          ),
+          */
+        ])
+
+    );
+  }
+
+
+  Card buildConnectBox() {
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: connectedDevice != null
+            ? ListTile(
+          title: Text(
+            'Connected to: ${connectedDevice!.platformName}',
+            style: const TextStyle(fontWeight: FontWeight.bold),
+          ),
+        )
+            : Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              'Available Devices:',
+              style: TextStyle(fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 8.0),
+            isConnecting
+                ? const Center(child: CircularProgressIndicator())
+                : scanResults.isEmpty
+                ? const Text('No devices found')
+                : ListView.builder(
+              shrinkWrap: true,
+              itemCount: scanResults.length,
+              itemBuilder: (context, index) {
+                ScanResult result = scanResults[index];
+                return ListTile(
+                  title: Text(result.device.platformName.isNotEmpty
+                      ? result.device.platformName
+                      : 'Unknown Device'),
+                  subtitle: Text(result.device.remoteId.toString()),
+                  onTap: () => connectToDevice(result.device),
+                );
+              },
+            ),
+            const SizedBox(height: 8.0),
+            Center(
+              child: ElevatedButton.icon(
+                icon: isScanning
+                    ? const SizedBox(
+                  width: 24,
+                  height: 24,
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2,
+                    color: Colors.white,
                   ),
-                ),
+                )
+                    : const Icon(Icons.refresh),
+                label: Text(isScanning ? 'Scanning...' : 'Scan'),
+                onPressed: isScanning ? null : startScan,
               ),
             ),
           ],
@@ -194,6 +206,7 @@ class _SpeedometerScreenState extends State<SpeedometerScreen> {
       ),
     );
   }
+
 
   @override
   void initState() {
@@ -211,6 +224,76 @@ class _SpeedometerScreenState extends State<SpeedometerScreen> {
     super.dispose();
   }
 
+  void showStatusAlert(BuildContext context, String msg) {
+    StatusAlert.show(
+      context,
+      duration: const Duration(seconds: 2),
+      subtitle: msg,
+    );
+  }
+
+  // Abrir diálogo de configuraciones. Por ahora solo se configura el diámetro.
+  void openSettingsDialog() {
+    showDialog(
+      context: context,
+      builder: (context) {
+        String tempDiameter = wheelDiameter.toString();
+        return AlertDialog(
+          title: const Text('Settings'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+
+              const Text('Wheel Diameter (centimeters):'),
+              TextFormField(
+                initialValue: wheelDiameter.toString(),
+                keyboardType: TextInputType.number,
+                onChanged: (value) {
+                  if (value.isNotEmpty) {
+                    tempDiameter = value;
+                  }
+                },
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              child: const Text('Cancel'),
+            ),
+            TextButton(
+              onPressed: () async {
+                try {
+                  double newDiameter = double.parse(tempDiameter);
+                  setState(() {
+                    wheelDiameter = newDiameter;
+                  });
+                  // Send updated wheel diameter to ESP32
+                  if (connectedDevice != null) {
+                    await sendWheelDiameter();
+                  }
+                } catch (e) {
+                  showStatusAlert(context, "Error parsing diameter: $e");
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text("Invalid diameter value")),
+                  );
+                }
+                Navigator.of(context).pop();
+              },
+              child: const Text('Save'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+
+  /// /// /// /// /// /// /// /// /// /// ///
+  ///           MÉTODOS BLUETOOTH         ///
+  /// /// /// /// /// /// /// /// /// /// ///
   // Initialize the Bluetooth adapter
   Future<void> initBleAdapter() async {
     try {
@@ -415,72 +498,5 @@ class _SpeedometerScreenState extends State<SpeedometerScreen> {
       startScan(); // Restart scanning for devices
     }
   }
-
-  // Abrir diálogo de configuraciones. Por ahora solo se configura el diámetro.
-  void openSettingsDialog() {
-    showDialog(
-      context: context,
-      builder: (context) {
-        String tempDiameter = wheelDiameter.toString();
-        return AlertDialog(
-          title: const Text('Settings'),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-
-              const Text('Wheel Diameter (centimeters):'),
-              TextFormField(
-                initialValue: wheelDiameter.toString(),
-                keyboardType: TextInputType.number,
-                onChanged: (value) {
-                  if (value.isNotEmpty) {
-                    tempDiameter = value;
-                  }
-                },
-              ),
-            ],
-          ),
-          actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-              child: const Text('Cancel'),
-            ),
-            TextButton(
-              onPressed: () async {
-                try {
-                  double newDiameter = double.parse(tempDiameter);
-                  setState(() {
-                    wheelDiameter = newDiameter;
-                  });
-                  // Send updated wheel diameter to ESP32
-                  if (connectedDevice != null) {
-                    await sendWheelDiameter();
-                  }
-                } catch (e) {
-                  showStatusAlert(context, "Error parsing diameter: $e");
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text("Invalid diameter value")),
-                  );
-                }
-                Navigator.of(context).pop();
-              },
-              child: const Text('Save'),
-            ),
-          ],
-        );
-      },
-    );
-  }
-
-  void showStatusAlert(BuildContext context, String msg) {
-    StatusAlert.show(
-      context,
-      duration: const Duration(seconds: 2),
-      subtitle: msg,
-    );
-  }
-
 
 }
