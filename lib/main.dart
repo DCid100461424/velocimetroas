@@ -65,7 +65,8 @@ class _SpeedometerScreenState extends State<SpeedometerScreen> {
   double totalDistance = 0.0; // Distancia total recorrida en km/h
   double currentTemp = 0.0; // Temperatura actual en Celsius
   bool isConnecting = false;
-  bool isScanning = false; //TODO: ¿Ponemos una nueva variable para isTraining o nos vale esta?
+  bool isScanning = false;
+  bool isTraining = false;
 
   // Define UUIDs for the service and characteristics
   final String serviceUuid = "4fafc201-1fb5-459e-8fcc-c5c9c331914b";
@@ -106,44 +107,73 @@ class _SpeedometerScreenState extends State<SpeedometerScreen> {
         children: [
           // Caja de Velocidad
           Expanded(
-            child:Card(
-              color: connectedDevice != null ? Colors.blue : Colors.grey[300],
-              child: Center(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Text(
-                      currentSpeed.toStringAsFixed(1),
-                      style: TextStyle(
-                        fontSize: 72.0,
-                        fontWeight: FontWeight.bold,
-                        color: connectedDevice != null ? Colors.white : Colors.grey[600],
-                      ),
-                    ),
-                    Text(
-                      'km/h',
-                      style: TextStyle(
-                        fontSize: 24.0,
-                        color: connectedDevice != null ? Colors.white : Colors.grey[600],
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
+            child:buildMeasurementCard("Velocidad", currentSpeed.toStringAsFixed(1), 'km/h', isTraining, true),
           ),
 
-          /** TODO: Terminar de implementar la columna
           Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              //TODO: meter Cards
+              buildMeasurementCard("Veloc. media", currentSpeed.toStringAsFixed(1), 'km/h', isTraining, false),
+              buildMeasurementCard("Distancia total", currentSpeed.toStringAsFixed(1), 'km', isTraining, false),
             ],
           ),
-          */
+
+          Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              buildMeasurementCard("Temperatura", currentSpeed.toStringAsFixed(1), 'ºC', isTraining, false),
+              buildMeasurementCard("Tiempo entren.", currentSpeed.toStringAsFixed(1), 'h', isTraining, false),
+            ],
+          ),
+
         ])
 
     );
+  }
+
+  // Un método para construir una Card de medidas, como la de velocidad.
+  // Si está conectado, saldrá azul. Si no, saldrá gris.
+  Card buildMeasurementCard(String measureName, String measureValue, String measureUnits, bool isActive, bool bigFont) {
+    return Card(
+            color: isActive ? Colors.blue : Colors.grey[300],
+            child: Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(
+                        measureValue,
+                        style: TextStyle(
+                          fontSize: bigFont? 72.0 : 50.0,
+                          fontWeight: FontWeight.bold,
+                          color: isActive ? Colors.white : Colors.grey[600],
+                        ),
+                      ),
+                      const SizedBox(width:10),
+                      Text(
+                        measureUnits,
+                        style: TextStyle(
+                          fontSize: bigFont? 24.0: 18.0,
+                          color: isActive ? Colors.white : Colors.grey[600],
+                        ),
+                      ),
+                      ]),
+
+                  const SizedBox(width:10),
+
+                  Text(
+                    measureName,
+                    style: TextStyle(
+                      fontSize: bigFont? 24.0: 18.0,
+                      color: isActive ? Colors.white : Colors.grey[600],
+                    ),
+                  )
+                ],
+              ),
+            ),
+          );
   }
 
 
