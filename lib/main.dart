@@ -1,5 +1,3 @@
-import 'dart:ffi';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_blue_plus/flutter_blue_plus.dart';
 import 'package:provider/provider.dart';
@@ -14,7 +12,7 @@ void main() {
 }
 
 class MyApp extends StatelessWidget {
-  const MyApp({Key? key}) : super(key: key);
+  const MyApp({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -372,10 +370,6 @@ class _SpeedometerScreenState extends State<SpeedometerScreen> {
                   setState(() {
                     wheelDiameter = newDiameter;
                   });
-                  // Send updated wheel diameter to ESP32
-                  if (connectedDevice != null) {
-                    await sendWheelDiameter();
-                  }
                 } catch (e) {
                   showStatusAlert(context, "Error parsing diameter: $e");
                   ScaffoldMessenger.of(context).showSnackBar(
@@ -405,9 +399,8 @@ class _SpeedometerScreenState extends State<SpeedometerScreen> {
         return;
       }
 
-
       // Check if Bluetooth is turned on
-      if (await FlutterBluePlus.isOn == false) {
+      if (await FlutterBluePlus.adapterState.first == BluetoothAdapterState.on) {
         showStatusAlert(context, "Bluetooth is turned off");
         // On Android, we can ask the user to turn on Bluetooth
         await FlutterBluePlus.turnOn();
@@ -631,9 +624,6 @@ class _SpeedometerScreenState extends State<SpeedometerScreen> {
       if (!foundWrite) showStatusAlert(context, 'Error: Write Characteristic UUID not found.');
       if (!foundNotify) showStatusAlert(context, 'Error: Notify Characteristic UUID not found.');
 
-      // Send the wheel diameter to the ESP32
-      await sendWheelDiameter();
-
       setState(() {
         connectedDevice = device;
         isConnecting = false;
@@ -648,6 +638,7 @@ class _SpeedometerScreenState extends State<SpeedometerScreen> {
     }
   }
 
+  //TODO: DEPRECATED
   // Send wheel diameter to ESP32
   Future<void> sendWheelDiameter() async {
     if (connectedDevice != null && writeCharacteristic != null) {
