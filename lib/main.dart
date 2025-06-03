@@ -131,10 +131,8 @@ class _SpeedometerScreenState extends State<SpeedometerScreen> {
               style: TextStyle(fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 8.0),
-            isConnecting
-                ? const Center(child: CircularProgressIndicator())
-                : scanResults.isEmpty
-                ? const Text('No devices found')
+            isConnecting? const Center(child: CircularProgressIndicator())
+                : scanResults.isEmpty? const Text('No devices found')
                 : ListView.builder(
               shrinkWrap: true,
               itemCount: scanResults.length,
@@ -199,7 +197,7 @@ class _SpeedometerScreenState extends State<SpeedometerScreen> {
 
             TableRow(
               children: [
-                buildMeasurementCard("Temperatura", currentTemp.toStringAsFixed(1), 'ºC', isTraining, false),
+                buildMeasurementCard("Temperatura", currentTemp.toStringAsFixed(1), 'ºC', (connectedDevice!=null), false),
                 buildMeasurementCard("Tiempo entren.", chrono.elapsed.toString().substring(0,7), 'h', isTraining, false),
               ],
             )],
@@ -289,14 +287,18 @@ class _SpeedometerScreenState extends State<SpeedometerScreen> {
           List<int> bytes = utf8.encode("STOP");
           await writeCharacteristic!.write(bytes);
 
-          isTraining = false;
+          setState(() {
+            isTraining = false;
+          });
           chrono.stop();
         }
         else {
           List<int> bytes = utf8.encode(wheelDiameter.toString());
           await writeCharacteristic!.write(bytes);
 
-          isTraining = true;
+          setState(() {
+            isTraining = true;
+          });
           chrono.start();
         }
       } catch (e) {
@@ -337,7 +339,7 @@ class _SpeedometerScreenState extends State<SpeedometerScreen> {
     showDialog(
       context: context,
       builder: (context) {
-        String tempDiameter = wheelDiameter.toString();
+        String auxDiameter = wheelDiameter.toString();
         return AlertDialog(
           title: const Text('Settings'),
           content: Column(
@@ -350,7 +352,7 @@ class _SpeedometerScreenState extends State<SpeedometerScreen> {
                 keyboardType: TextInputType.number,
                 onChanged: (value) {
                   if (value.isNotEmpty) {
-                    tempDiameter = value;
+                    auxDiameter = value;
                   }
                 },
               ),
@@ -366,7 +368,7 @@ class _SpeedometerScreenState extends State<SpeedometerScreen> {
             TextButton(
               onPressed: () async {
                 try {
-                  double newDiameter = double.parse(tempDiameter);
+                  double newDiameter = double.parse(auxDiameter);
                   setState(() {
                     wheelDiameter = newDiameter;
                   });
