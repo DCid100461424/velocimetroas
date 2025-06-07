@@ -64,7 +64,7 @@ class _SpeedometerScreenState extends State<SpeedometerScreen> {
   final int DISCONNECTED_STATE = 0;
   final int NOT_TRAINING_STATE = 1;
   final int TRAINING_STATE = 2;
-  double wheelDiameter = 26.0; // Diámetro de rueda en centímetros
+  double wheelDiameter = 50.0; // Diámetro de rueda en centímetros
   double currentSpeed = 0.0; // Velocidad actual en km/h
   double avgSpeed = 0.0; // Velocidad media en km/h
   double totalDistance = 0.0; // Distancia total recorrida en km/h
