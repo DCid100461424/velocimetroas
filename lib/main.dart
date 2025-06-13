@@ -31,7 +31,6 @@ class MyApp extends StatelessWidget {
 }
 
 
-//TODO: Ver si ponemos algo más en esta clase. Probablemente las suscripciones y conexiones.
 class MyAppState extends ChangeNotifier {
   var stateMsg = "Bluetooth is not available on this device";
 
@@ -48,19 +47,18 @@ class SpeedometerScreen extends StatefulWidget {
 }
 
 class _SpeedometerScreenState extends State<SpeedometerScreen> {
-  // Bluetooth related variables
+  // Variables relacionadas con Bluetooth
   BluetoothDevice? connectedDevice;
   List<ScanResult> scanResults = [];
   StreamSubscription<List<ScanResult>>? scanSubscription;
   StreamSubscription<BluetoothConnectionState>? deviceStateSubscription;
   BluetoothCharacteristic? writeCharacteristic;
   StreamSubscription<List<int>>? characteristicSubscription;
-  //StreamSubscription<List<int>>? timeSubscription;
   StreamSubscription<List<int>>? avgSpeedSubscription;
   StreamSubscription<List<int>>? distanceSubscription;
   StreamSubscription<List<int>>? temperatureSubscription;
 
-  // App state variables
+  // Variables del estado de la app
   final int DISCONNECTED_STATE = 0;
   final int NOT_TRAINING_STATE = 1;
   final int TRAINING_STATE = 2;
@@ -75,15 +73,13 @@ class _SpeedometerScreenState extends State<SpeedometerScreen> {
   bool isScanning = false;
   bool isTraining = false;
 
-  // Define UUIDs for the service and characteristics
-  // Posible nueva: dc9a393d-bebf-4d11-8235-01878bbec7fe
-  final String SERVICE_UUID        = "4fafc201-0000-459e-8fcc-c5c9c331914b";
-  final String WRITE_CHARACTERISTIC_UUID = "beb5483e-36e1-4688-b7f5-ea07361b26a8";
-  final String NOTIFY_CHARACTERISTIC_UUID = "cba1d466-344c-4be3-ab3f-189f80d751a2";
-  final String AVG_SPEED_UUID="4fafc201-0001-459e-8fcc-c5c9c331914b";
-  final String TOTAL_DISTANCE_UUID="4fafc201-0002-459e-8fcc-c5c9c331914b";
-  final String TEMPERATURE_UUID="4fafc201-0003-459e-8fcc-c5c9c331914b";
-  final String TOTAL_TIME_UUID="4fafc201-0004-459e-8fcc-c5c9c331914b";
+  // Definir los UUIDs del servicio y cracterísticas. Deben coincidir con los del microcontrolador.
+  final String SERVICE_UUID        = "dc9a0000-bebf-4d11-8235-01878bbec7fe";
+  final String WRITE_CHARACTERISTIC_UUID = "dc9a0100-bebf-4d11-8235-01878bbec7fe";
+  final String SPEED_CHARACTERISTIC_UUID = "dc9a0200-bebf-4d11-8235-01878bbec7fe";
+  final String AVG_SPEED_UUID="dc9a0201-bebf-4d11-8235-01878bbec7fe";
+  final String TOTAL_DISTANCE_UUID="dc9a0202-bebf-4d11-8235-01878bbec7fe";
+  final String TEMPERATURE_UUID="dc9a0203-bebf-4d11-8235-01878bbec7fe";
 
   @override
   Widget build(BuildContext context) {
@@ -112,6 +108,7 @@ class _SpeedometerScreenState extends State<SpeedometerScreen> {
     );
   }
 
+  // Construye la Card que contiene la información del dispositivo conectado, o de su escaneo.
   Card buildConnectBox() {
     return Card(
       child: Padding(
@@ -170,6 +167,7 @@ class _SpeedometerScreenState extends State<SpeedometerScreen> {
     );
   }
 
+  // Construye el elemento Expanded que contiene las tarjetas de mediciones y el botón de entrenamiento
   Expanded buildMeasureBox() {
     return Expanded(
       child: Column(
@@ -203,16 +201,11 @@ class _SpeedometerScreenState extends State<SpeedometerScreen> {
             )],
           ),
 
-          //TODO: Botón de entrenamiento
-          //Button
-          // icon: isTraining ? icon.pause : icon.start
-          // (ver el título del icono, y ver para poner la caja en gris cuando no esté conectado)
-          // onPressed: (método. pedir confirmación para parar o iniciar?)
+          //Botón de entrenamiento
           ElevatedButton(
             onPressed: () {
               toggleTraining();
             },
-            //TODO: Ver si hay que modificar el estilo
             style: ElevatedButton.styleFrom(
                 backgroundColor:isTraining? Colors.redAccent:  connectedDevice==null? Colors.grey[400]: Colors.green[200],
                 padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
@@ -227,13 +220,12 @@ class _SpeedometerScreenState extends State<SpeedometerScreen> {
             ),
           ),
 
-          // TODO: Botón extra para reiniciar?? o que no se pause y en vez de eso se reinicie?
         ])
 
     );
   }
 
-  // Un método para construir una Card de medidas, como la de velocidad.
+  // Una función para construir una Card de medidas, como la de velocidad.
   // Si está conectado, saldrá azul. Si no, saldrá gris.
   Card buildMeasurementCard(String measureName, String measureValue, String measureUnits, bool isActive, bool bigFont) {
     return Card(
@@ -278,7 +270,7 @@ class _SpeedometerScreenState extends State<SpeedometerScreen> {
           );
   }
 
-  // TODO: Hacer una función real
+  // Activa o desactiva el modo de entrenamiento, incluido el cambio de estado que conlleva.
   Future<void> toggleTraining() async {
     if (connectedDevice != null && writeCharacteristic != null) {
       try {
@@ -313,13 +305,13 @@ class _SpeedometerScreenState extends State<SpeedometerScreen> {
   @override
   void initState() {
     super.initState();
-    // Initialize the Bluetooth adapter and start scanning
+    // Inicializa el adaptador de BLE, que empieza a escanear
     initBleAdapter();
   }
 
   @override
   void dispose() {
-    // Clean up all subscriptions
+    // Limpiar todas las suscripciones
     scanSubscription?.cancel();
     deviceStateSubscription?.cancel();
     characteristicSubscription?.cancel();
@@ -392,30 +384,30 @@ class _SpeedometerScreenState extends State<SpeedometerScreen> {
   /// /// /// /// /// /// /// /// /// /// ///
   ///           MÉTODOS BLUETOOTH         ///
   /// /// /// /// /// /// /// /// /// /// ///
-  // Initialize the Bluetooth adapter
+  // Función para inicializar el adaptador de Bluetooth LE
   Future<void> initBleAdapter() async {
     try {
-      // Check if Bluetooth is available
+      // Comprobar si Bluetooth está disponible
       if (await FlutterBluePlus.isSupported == false) {
         showStatusAlert(context, "Bluetooth is not available on this device");
         return;
       }
 
-      // Check if Bluetooth is turned on
+      // Comprobar si Bluetooth está encendido
       if (await FlutterBluePlus.adapterState.first == BluetoothAdapterState.on) {
         showStatusAlert(context, "Bluetooth is turned off");
-        // On Android, we can ask the user to turn on Bluetooth
+        // En Android, podemos pedir al usuario que encienda Bluetooth
         await FlutterBluePlus.turnOn();
       }
 
-      // Now we can start scanning
+      // Ahora que hemos comprobado que Bluetooth está encendido, podemos emepzar a escanear
       startScan();
     } catch (e) {
       showStatusAlert(context, "Error initializing Bluetooth: $e");
     }
   }
 
-  // Start scanning for Bluetooth devices
+  // Función para escanear dispositivos Bluetooth
   void startScan() async {
     if (isScanning) return;
 
@@ -424,11 +416,10 @@ class _SpeedometerScreenState extends State<SpeedometerScreen> {
       isScanning = true;
     });
 
-    // Cancel any existing subscriptions
+    // Cancelar suscripciones existentes para empezar un nuevo escaneo
     scanSubscription?.cancel();
 
     try {
-      // Start scanning
       scanSubscription = FlutterBluePlus.scanResults.listen(
               (results) {
             setState(() {
@@ -443,10 +434,9 @@ class _SpeedometerScreenState extends State<SpeedometerScreen> {
           }
       );
 
-      // Start the scan
       await FlutterBluePlus.startScan(timeout: const Duration(seconds: 4));
 
-      // After the scan timeout, update the state
+      // Tras el timeout del escaneo actualizamos el estado de la aplicación
       setState(() {
         isScanning = false;
       });
@@ -458,13 +448,13 @@ class _SpeedometerScreenState extends State<SpeedometerScreen> {
     }
   }
 
-  // Connect to a device
+  // Función para conectar con un dispositivo
   Future<void> connectToDevice(BluetoothDevice device) async {
     setState(() {
       isConnecting = true;
     });
 
-    // Stop scanning
+    // Dejar de escanear
     try {
       await FlutterBluePlus.stopScan();
     } catch (e) {
@@ -472,20 +462,19 @@ class _SpeedometerScreenState extends State<SpeedometerScreen> {
     }
 
     try {
-      // Connect to the device
+      // Conectar con el dispositivo
       await device.connect();
 
-      // Set up device state subscription
+      // Configurar el estado de la suscripción del dispositivo
       deviceStateSubscription = device.connectionState.listen(
               (state) {
             if (state == BluetoothConnectionState.disconnected) {
-              // Device disconnected
               setState(() {
                 connectedDevice = null;
                 currentSpeed = 0.0;
                 isConnecting = false;
               });
-              startScan(); // Restart scanning for devices
+              startScan(); // Volver a empezar a escanear dispositivos
             }
           },
           onError: (e) {
@@ -497,33 +486,32 @@ class _SpeedometerScreenState extends State<SpeedometerScreen> {
           }
       );
 
-      // Discover services
       List<BluetoothService> services = await device.discoverServices();
       bool foundWrite = false;
       bool foundNotify = false;
 
-      // Find the appropriate service and characteristics
+      // Comprobar los servicios Bluetooth para encontrar los servicios y características que buscamos
       for (BluetoothService service in services) {
-        // Check if this is the service we're looking for
+        // Comprobar si este es el servicio que buscamos
         if (service.uuid.toString() == SERVICE_UUID) {
-          // Find the write characteristic
+          // Encontrar cada característica utilizada
           for (BluetoothCharacteristic characteristic in service.characteristics) {
-            // Check if this is the write characteristic
+            // Comprobar si esta es la carcaterística de escritura
             if (characteristic.uuid.toString() == WRITE_CHARACTERISTIC_UUID) {
               writeCharacteristic = characteristic;
               foundWrite = true;
             }
 
-            // Check if this is the notify characteristic
-            if (characteristic.uuid.toString() == NOTIFY_CHARACTERISTIC_UUID) {
+            // Comprobar si esta es la carcaterística de velocidad
+            if (characteristic.uuid.toString() == SPEED_CHARACTERISTIC_UUID) {
               foundNotify = true;
-              // Set up notification
+              // Activar las notificaciones
               await characteristic.setNotifyValue(true);
 
-              // Listen for notifications (speed data)
+              // Empezar a escuchar las notificaciones de velocidad
               characteristicSubscription = characteristic.onValueReceived.listen((value) {
                     if (value.isNotEmpty) {
-                      // Parse the speed data from the ESP32
+                      // Diseccionar los datos recibidos de la ESP32
                       try {
                         final speedString = String.fromCharCodes(value);
                         final speedValue = double.parse(speedString);
@@ -541,15 +529,12 @@ class _SpeedometerScreenState extends State<SpeedometerScreen> {
               );
             }
 
-            // Check if this is the notify characteristic
+            // Comprobar si esta es la carcaterística de velocidad media
             if (characteristic.uuid.toString() == AVG_SPEED_UUID) {
-              // Set up notification
               await characteristic.setNotifyValue(true);
 
-              // Listen for notifications (speed data)
               characteristicSubscription = characteristic.onValueReceived.listen((value) {
                 if (value.isNotEmpty) {
-                  // Parse the speed data from the ESP32
                   try {
                     final avgspeedString = String.fromCharCodes(value);
                     final avgspeedValue = double.parse(avgspeedString);
@@ -567,15 +552,12 @@ class _SpeedometerScreenState extends State<SpeedometerScreen> {
               );
             }
 
-            // Check if this is the notify characteristic
+            // Comprobar si esta es la carcaterística de distancia total
             if (characteristic.uuid.toString() == TOTAL_DISTANCE_UUID) {
-              // Set up notification
               await characteristic.setNotifyValue(true);
 
-              // Listen for notifications (speed data)
               distanceSubscription = characteristic.onValueReceived.listen((value) {
                 if (value.isNotEmpty) {
-                  // Parse the speed data from the ESP32
                   try {
                     final distanceString = String.fromCharCodes(value);
                     final distanceValue = double.parse(distanceString);
@@ -593,15 +575,12 @@ class _SpeedometerScreenState extends State<SpeedometerScreen> {
               );
             }
 
-            // Check if this is the temperature characteristic
+            // Comprobar si esta es la característica de temperatura
             if (characteristic.uuid.toString() == TEMPERATURE_UUID) {
-              // Set up notification
               await characteristic.setNotifyValue(true);
 
-              // Listen for notifications (speed data)
               temperatureSubscription = characteristic.onValueReceived.listen((value) {
                 if (value.isNotEmpty) {
-                  // Parse the speed data from the ESP32
                   try {
                     final tempString = String.fromCharCodes(value);
                     final tempValue = double.parse(tempString);
@@ -636,25 +615,11 @@ class _SpeedometerScreenState extends State<SpeedometerScreen> {
       setState(() {
         isConnecting = false;
       });
-      startScan(); // Restart scanning for devices
+      startScan(); // Volver a empezar a escanear dispositivos
     }
   }
 
-  //TODO: DEPRECATED
-  // Send wheel diameter to ESP32
-  Future<void> sendWheelDiameter() async {
-    if (connectedDevice != null && writeCharacteristic != null) {
-      try {
-        // Convert wheel diameter to bytes and send
-        List<int> bytes = utf8.encode(wheelDiameter.toString());
-        await writeCharacteristic!.write(bytes);
-      } catch (e) {
-        showStatusAlert(context, 'Error sending wheel diameter: $e');
-      }
-    }
-  }
-
-  // Disconnect from device
+  // Desconectar del dispositivo
   Future<void> disconnectFromDevice() async {
     if (connectedDevice != null) {
       try {
@@ -668,7 +633,7 @@ class _SpeedometerScreenState extends State<SpeedometerScreen> {
         currentSpeed = 0.0;
       });
 
-      startScan(); // Restart scanning for devices
+      startScan(); // Volver a empezar a escanear dispositivos
     }
   }
 
