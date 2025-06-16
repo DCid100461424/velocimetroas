@@ -40,7 +40,13 @@ class MyAppState extends ChangeNotifier {
 }
 
 class SpeedometerScreen extends StatefulWidget {
-  const SpeedometerScreen({Key? key}) : super(key: key);
+  const SpeedometerScreen({super.key});// Definir los UUIDs del servicio y cracterísticas. Deben coincidir con los del microcontrolador.
+  final String SERVICE_UUID = "dc9a0000-bebf-4d11-8235-01878bbec7fe";
+  final String WRITE_CHARACTERISTIC_UUID = "dc9a0100-bebf-4d11-8235-01878bbec7fe";
+  final String SPEED_CHARACTERISTIC_UUID = "dc9a0200-bebf-4d11-8235-01878bbec7fe";
+  final String AVG_SPEED_UUID ="dc9a0201-bebf-4d11-8235-01878bbec7fe";
+  final String TOTAL_DISTANCE_UUID ="dc9a0202-bebf-4d11-8235-01878bbec7fe";
+  final String TEMPERATURE_UUID ="dc9a0203-bebf-4d11-8235-01878bbec7fe";
 
   @override
   _SpeedometerScreenState createState() => _SpeedometerScreenState();
@@ -58,10 +64,6 @@ class _SpeedometerScreenState extends State<SpeedometerScreen> {
   StreamSubscription<List<int>>? distanceSubscription;
   StreamSubscription<List<int>>? temperatureSubscription;
 
-  // Variables del estado de la app
-  final int DISCONNECTED_STATE = 0;
-  final int NOT_TRAINING_STATE = 1;
-  final int TRAINING_STATE = 2;
   double wheelDiameter = 50.0; // Diámetro de rueda en centímetros
   double currentSpeed = 0.0; // Velocidad actual en km/h
   double avgSpeed = 0.0; // Velocidad media en km/h
@@ -73,13 +75,6 @@ class _SpeedometerScreenState extends State<SpeedometerScreen> {
   bool isScanning = false;
   bool isTraining = false;
 
-  // Definir los UUIDs del servicio y cracterísticas. Deben coincidir con los del microcontrolador.
-  final String SERVICE_UUID        = "dc9a0000-bebf-4d11-8235-01878bbec7fe";
-  final String WRITE_CHARACTERISTIC_UUID = "dc9a0100-bebf-4d11-8235-01878bbec7fe";
-  final String SPEED_CHARACTERISTIC_UUID = "dc9a0200-bebf-4d11-8235-01878bbec7fe";
-  final String AVG_SPEED_UUID="dc9a0201-bebf-4d11-8235-01878bbec7fe";
-  final String TOTAL_DISTANCE_UUID="dc9a0202-bebf-4d11-8235-01878bbec7fe";
-  final String TEMPERATURE_UUID="dc9a0203-bebf-4d11-8235-01878bbec7fe";
 
   @override
   Widget build(BuildContext context) {
@@ -219,7 +214,6 @@ class _SpeedometerScreenState extends State<SpeedometerScreen> {
               ]
             ),
           ),
-
         ])
 
     );
@@ -493,17 +487,17 @@ class _SpeedometerScreenState extends State<SpeedometerScreen> {
       // Comprobar los servicios Bluetooth para encontrar los servicios y características que buscamos
       for (BluetoothService service in services) {
         // Comprobar si este es el servicio que buscamos
-        if (service.uuid.toString() == SERVICE_UUID) {
+        if (service.uuid.toString() == widget.SERVICE_UUID) {
           // Encontrar cada característica utilizada
           for (BluetoothCharacteristic characteristic in service.characteristics) {
             // Comprobar si esta es la carcaterística de escritura
-            if (characteristic.uuid.toString() == WRITE_CHARACTERISTIC_UUID) {
+            if (characteristic.uuid.toString() == widget.WRITE_CHARACTERISTIC_UUID) {
               writeCharacteristic = characteristic;
               foundWrite = true;
             }
 
             // Comprobar si esta es la carcaterística de velocidad
-            if (characteristic.uuid.toString() == SPEED_CHARACTERISTIC_UUID) {
+            if (characteristic.uuid.toString() == widget.SPEED_CHARACTERISTIC_UUID) {
               foundNotify = true;
               // Activar las notificaciones
               await characteristic.setNotifyValue(true);
@@ -530,7 +524,7 @@ class _SpeedometerScreenState extends State<SpeedometerScreen> {
             }
 
             // Comprobar si esta es la carcaterística de velocidad media
-            if (characteristic.uuid.toString() == AVG_SPEED_UUID) {
+            if (characteristic.uuid.toString() == widget.AVG_SPEED_UUID) {
               await characteristic.setNotifyValue(true);
 
               characteristicSubscription = characteristic.onValueReceived.listen((value) {
@@ -553,7 +547,7 @@ class _SpeedometerScreenState extends State<SpeedometerScreen> {
             }
 
             // Comprobar si esta es la carcaterística de distancia total
-            if (characteristic.uuid.toString() == TOTAL_DISTANCE_UUID) {
+            if (characteristic.uuid.toString() == widget.TOTAL_DISTANCE_UUID) {
               await characteristic.setNotifyValue(true);
 
               distanceSubscription = characteristic.onValueReceived.listen((value) {
@@ -576,7 +570,7 @@ class _SpeedometerScreenState extends State<SpeedometerScreen> {
             }
 
             // Comprobar si esta es la característica de temperatura
-            if (characteristic.uuid.toString() == TEMPERATURE_UUID) {
+            if (characteristic.uuid.toString() == widget.TEMPERATURE_UUID) {
               await characteristic.setNotifyValue(true);
 
               temperatureSubscription = characteristic.onValueReceived.listen((value) {
