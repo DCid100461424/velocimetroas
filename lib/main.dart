@@ -536,7 +536,7 @@ class _SpeedometerScreenState extends State<SpeedometerScreen> {
                       avgSpeed = avgspeedValue;
                     });
                   } catch (e) {
-                    showStatusAlert(context, "Error parsing speed data: $e");
+                    showStatusAlert(context, "Error parsing average speed data: $e");
                   }
                 }
               },
