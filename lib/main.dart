@@ -19,7 +19,7 @@ class MyApp extends StatelessWidget {
     return ChangeNotifierProvider(
       create: (context) => MyAppState(),
       child: MaterialApp(
-        title: 'ESP32 Speedometer',
+        title: 'Velocímetro ESP32',
         theme: ThemeData(
           useMaterial3: true,
           primarySwatch: Colors.blue,
@@ -32,7 +32,7 @@ class MyApp extends StatelessWidget {
 
 
 class MyAppState extends ChangeNotifier {
-  var stateMsg = "Bluetooth is not available on this device";
+  var stateMsg = "Bluetooth no está disponible en este dispositivo";
 
   void changeBluetoothStateMsg(String msg){
     stateMsg = msg;
@@ -80,7 +80,7 @@ class _SpeedometerScreenState extends State<SpeedometerScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('ESP32 Speedometer'),
+        title: const Text('Velocímetro ESP32'),
         actions: [
           IconButton(
             icon: const Icon(Icons.settings),
@@ -111,7 +111,7 @@ class _SpeedometerScreenState extends State<SpeedometerScreen> {
         child: connectedDevice != null
             ? ListTile(
           title: Text(
-            'Connected to: ${connectedDevice!.platformName}',
+            'Conectado a: ${connectedDevice!.platformName}',
             style: const TextStyle(fontWeight: FontWeight.bold),
           ),
         )
@@ -119,12 +119,12 @@ class _SpeedometerScreenState extends State<SpeedometerScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             const Text(
-              'Available Devices:',
+              'Dispositivos disponibles:',
               style: TextStyle(fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 8.0),
             isConnecting? const Center(child: CircularProgressIndicator())
-                : scanResults.isEmpty? const Text('No devices found')
+                : scanResults.isEmpty? const Text('No se encontró dispositivos')
                 : ListView.builder(
               shrinkWrap: true,
               itemCount: scanResults.length,
@@ -133,7 +133,7 @@ class _SpeedometerScreenState extends State<SpeedometerScreen> {
                 return ListTile(
                   title: Text(result.device.platformName.isNotEmpty
                       ? result.device.platformName
-                      : 'Unknown Device'),
+                      : 'Dispositivo desconocido'),
                   subtitle: Text(result.device.remoteId.toString()),
                   onTap: () => connectToDevice(result.device),
                 );
@@ -152,7 +152,7 @@ class _SpeedometerScreenState extends State<SpeedometerScreen> {
                   ),
                 )
                     : const Icon(Icons.refresh),
-                label: Text(isScanning ? 'Scanning...' : 'Scan'),
+                label: Text(isScanning ? 'Escaneando...' : 'Escanear'),
                 onPressed: isScanning ? null : startScan,
               ),
             ),
@@ -291,8 +291,6 @@ class _SpeedometerScreenState extends State<SpeedometerScreen> {
         showStatusAlert(context, 'Error mandando señal al microcontrolador: $e');
       }
     }
-
-
   }
 
 
@@ -327,12 +325,12 @@ class _SpeedometerScreenState extends State<SpeedometerScreen> {
       builder: (context) {
         String auxDiameter = wheelDiameter.toString();
         return AlertDialog(
-          title: const Text('Settings'),
+          title: const Text('Ajustes'),
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
 
-              const Text('Wheel Diameter (centimeters):'),
+              const Text('Diámetro de rueda (centímetros):'),
               TextFormField(
                 initialValue: wheelDiameter.toString(),
                 keyboardType: TextInputType.number,
@@ -349,7 +347,7 @@ class _SpeedometerScreenState extends State<SpeedometerScreen> {
               onPressed: () {
                 Navigator.of(context).pop();
               },
-              child: const Text('Cancel'),
+              child: const Text('Cancelar'),
             ),
             TextButton(
               onPressed: () async {
@@ -359,14 +357,14 @@ class _SpeedometerScreenState extends State<SpeedometerScreen> {
                     wheelDiameter = newDiameter;
                   });
                 } catch (e) {
-                  showStatusAlert(context, "Error parsing diameter: $e");
+                  showStatusAlert(context, "Error leyendo diámetro: $e");
                   ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text("Invalid diameter value")),
+                    const SnackBar(content: Text("Valor de diámetro no válido")),
                   );
                 }
                 Navigator.of(context).pop();
               },
-              child: const Text('Save'),
+              child: const Text('Guardar'),
             ),
           ],
         );
@@ -383,13 +381,13 @@ class _SpeedometerScreenState extends State<SpeedometerScreen> {
     try {
       // Comprobar si Bluetooth está disponible
       if (await FlutterBluePlus.isSupported == false) {
-        showStatusAlert(context, "Bluetooth is not available on this device");
+        showStatusAlert(context, "Bluetooth no está disponible en este dispositivo");
         return;
       }
 
       // Comprobar si Bluetooth está encendido
       if (await FlutterBluePlus.adapterState.first == BluetoothAdapterState.on) {
-        showStatusAlert(context, "Bluetooth is turned off");
+        showStatusAlert(context, "Bluetooth está apagado");
         // En Android, podemos pedir al usuario que encienda Bluetooth
         await FlutterBluePlus.turnOn();
       }
@@ -397,7 +395,7 @@ class _SpeedometerScreenState extends State<SpeedometerScreen> {
       // Ahora que hemos comprobado que Bluetooth está encendido, podemos emepzar a escanear
       startScan();
     } catch (e) {
-      showStatusAlert(context, "Error initializing Bluetooth: $e");
+      showStatusAlert(context, "Error inicializando Bluetooth: $e");
     }
   }
 
@@ -421,7 +419,7 @@ class _SpeedometerScreenState extends State<SpeedometerScreen> {
             });
           },
           onError: (e) {
-            showStatusAlert(context, "Scan error: $e");
+            showStatusAlert(context, "Error de escaneo: $e");
             setState(() {
               isScanning = false;
             });
@@ -435,7 +433,7 @@ class _SpeedometerScreenState extends State<SpeedometerScreen> {
         isScanning = false;
       });
     } catch (e) {
-      showStatusAlert(context, "Error starting scan: $e");
+      showStatusAlert(context, "Error empezando el escaneo: $e");
       setState(() {
         isScanning = false;
       });
@@ -452,7 +450,7 @@ class _SpeedometerScreenState extends State<SpeedometerScreen> {
     try {
       await FlutterBluePlus.stopScan();
     } catch (e) {
-      showStatusAlert(context, "Error stopping scan: $e");
+      showStatusAlert(context, "Error parando el escaneo: $e");
     }
 
     try {
@@ -472,7 +470,7 @@ class _SpeedometerScreenState extends State<SpeedometerScreen> {
             }
           },
           onError: (e) {
-            showStatusAlert(context, "Connection state error: $e");
+            showStatusAlert(context, "Error de estado de conexión: $e");
             setState(() {
               isConnecting = false;
             });
@@ -513,12 +511,12 @@ class _SpeedometerScreenState extends State<SpeedometerScreen> {
                           currentSpeed = speedValue;
                         });
                       } catch (e) {
-                        showStatusAlert(context, "Error parsing speed data: $e");
+                        showStatusAlert(context, "Error leyendo datos de velocidad: $e");
                       }
                     }
                   },
                   onError: (e) {
-                    showStatusAlert(context, "Characteristic notification error: $e");
+                    showStatusAlert(context, "Error de Característica de notificación: $e");
                   }
               );
             }
@@ -536,12 +534,12 @@ class _SpeedometerScreenState extends State<SpeedometerScreen> {
                       avgSpeed = avgspeedValue;
                     });
                   } catch (e) {
-                    showStatusAlert(context, "Error parsing speed data: $e");
+                    showStatusAlert(context, "Error leyendo datos de velocidad media: $e");
                   }
                 }
               },
                   onError: (e) {
-                    showStatusAlert(context, "Characteristic notification error: $e");
+                    showStatusAlert(context, "Error de Característica de notificación: $e");
                   }
               );
             }
@@ -559,12 +557,12 @@ class _SpeedometerScreenState extends State<SpeedometerScreen> {
                       totalDistance = distanceValue;
                     });
                   } catch (e) {
-                    showStatusAlert(context, "Error parsing distance data: $e");
+                    showStatusAlert(context, "Error leyendo datos de distancia: $e");
                   }
                 }
               },
                   onError: (e) {
-                    showStatusAlert(context, "Characteristic notification error: $e");
+                    showStatusAlert(context, "Error de Característica de notificación: $e");
                   }
               );
             }
@@ -582,12 +580,12 @@ class _SpeedometerScreenState extends State<SpeedometerScreen> {
                       currentTemp = tempValue;
                     });
                   } catch (e) {
-                    showStatusAlert(context, "Error parsing temperature data: $e");
+                    showStatusAlert(context, "Error leyendo datos de temperatura: $e");
                   }
                 }
               },
                   onError: (e) {
-                    showStatusAlert(context, "Characteristic notification error: $e");
+                    showStatusAlert(context, "Error de Característica de notificación: $e");
                   }
               );
             }
@@ -605,7 +603,7 @@ class _SpeedometerScreenState extends State<SpeedometerScreen> {
       });
 
     } catch (e) {
-      showStatusAlert(context, 'Error connecting to device: $e');
+      showStatusAlert(context, 'Error conectando al dispositivo: $e');
       setState(() {
         isConnecting = false;
       });
@@ -619,7 +617,7 @@ class _SpeedometerScreenState extends State<SpeedometerScreen> {
       try {
         await connectedDevice!.disconnect();
       } catch (e) {
-        showStatusAlert(context, "Error disconnecting: $e");
+        showStatusAlert(context, "Error en la desconexión: $e");
       }
 
       setState(() {
